@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+  postgres:
+    image: postgres:12.5
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432:5432
+
+  url-shortener-server:
+    container_name: url-shortener-server
+    restart: always
+    build:
+      context: .
+    depends_on:
+      - postgres
+    ports:
+      - 8500:8500
