@@ -1,14 +1,14 @@
 version: '3.7'
 
 services:
-  postgres:
-    image: postgres:12.5
+  mongo:
+    image: mongo:4.4.2-bionic
     restart: always
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
     ports:
-      - 5432:5432
+      - 27017:27017
 
   url-shortener-server:
     container_name: url-shortener-server
@@ -16,6 +16,6 @@ services:
     build:
       context: .
     depends_on:
-      - postgres
+      - mongo
     ports:
       - 8500:8500
