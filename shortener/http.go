@@ -8,4 +8,19 @@ type RedirectHandler interface {
 }
 
 type handler struct {
+	redirectService RedirectService
+}
+
+func NewHandler(service RedirectService) RedirectHandler {
+	return &handler{
+		redirectService: service,
+	}
+}
+
+func (h handler) Get(writer http.ResponseWriter, request *http.Request) {
+	panic("implement me")
+}
+
+func (h handler) Post(writer http.ResponseWriter, request *http.Request) {
+	panic("implement me")
 }
