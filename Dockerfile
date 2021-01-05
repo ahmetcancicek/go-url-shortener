@@ -3,6 +3,8 @@ WORKDIR /app
 COPY go.mod .
 RUN go mod download
 COPY ./cmd ./cmd
+COPY ./repository ./repository
+COPY ./shortener ./shortener
 RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server
 
 FROM alpine:latest
