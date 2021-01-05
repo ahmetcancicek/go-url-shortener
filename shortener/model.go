@@ -6,7 +6,8 @@ import (
 )
 
 type Redirect struct {
-	ID        uuid.UUID `json:"id" bson:"id"`
+	ID        uint      `json:"id"`
+	UUID      uuid.UUID `json:"id" bson:"id"`
 	Code      string    `json:"code"`
 	URL       string    `json:"url"`
 	Click     int       `json:"click"`
