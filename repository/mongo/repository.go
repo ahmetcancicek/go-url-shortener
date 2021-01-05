@@ -58,7 +58,7 @@ func (r Repository) FindByCode(code string) (*shortener.Redirect, error) {
 	return redirect, nil
 }
 
-func (r Repository) FindByID(id string) (*shortener.Redirect, error) {
+func (r Repository) FindByID(id uint) (*shortener.Redirect, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
