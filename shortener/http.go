@@ -3,9 +3,8 @@ package shortener
 import "net/http"
 
 type RedirectHandler interface {
-	Get(http.ResponseWriter, *http.Request)
-	Post(http.ResponseWriter, *http.Request)
-	Put(http.ResponseWriter, *http.Request)
+	FindRedirectByID() http.HandlerFunc
+	CreateRedirect() http.HandlerFunc
 }
 
 type handler struct {
@@ -18,14 +17,14 @@ func NewHandler(service RedirectService) RedirectHandler {
 	}
 }
 
-func (h handler) Get(writer http.ResponseWriter, request *http.Request) {
-	panic("implement me")
+func (h handler) FindRedirectByID() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+	}
 }
 
-func (h handler) Post(writer http.ResponseWriter, request *http.Request) {
-	panic("implement me")
-}
+func (h handler) CreateRedirect() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-func (h handler) Put(writer http.ResponseWriter, request *http.Request) {
-	panic("implement me")
+	}
 }
