@@ -26,7 +26,7 @@ services:
 
   mongo-express:
     image: mongo-express
-    container_name: mongo-expres
+    container_name: mongo-express
     depends_on:
       - mongo
     ports:
