@@ -30,7 +30,7 @@ services:
     depends_on:
       - mongo
     ports:
-      - 8501:8501
+      - 8081:8081
     restart: always
     environment:
       ME_CONFIG_MONGODB_SERVER: mongo
