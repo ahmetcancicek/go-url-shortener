@@ -1,5 +1,11 @@
 package shortener
 
+import (
+	"github.com/go-playground/validator/v10"
+	"github.com/pkg/errors"
+	"time"
+)
+
 type redirectService struct {
 	redirectRepository RedirectRepository
 }
@@ -11,17 +17,16 @@ func NewRedirectService(redirectRepository RedirectRepository) RedirectService {
 }
 
 func (r redirectService) FindByCode(code string) (*Redirect, error) {
-	panic("implement me")
+	return r.redirectRepository.FindByCode(code)
 }
 
-func (r redirectService) FindByID(id string) (*Redirect, error) {
-	panic("implement me")
-}
-
-func (r redirectService) Save(redirect *Redirect) (*Redirect, error) {
-	panic("implement me")
-}
-
-func (r redirectService) Update(redirect *Redirect) (*Redirect, error) {
-	panic("implement me")
+func (r *redirectService) Save(redirect *Redirect) (*Redirect, error) {
+	validate := validator.New()
+	if err := validate.Struct(redirect); err != nil {
+		return redirect, errors.Wrap(err, "service.Redirect.Save")
+	}
+	// TODO: Fix
+	redirect.Code = "A538"
+	redirect.CreatedAt = time.Now()
+	return r.redirectRepository.Save(redirect)
 }
