@@ -2,13 +2,16 @@ version: '3.7'
 
 services:
   mongo:
-    image: mongo:4.4.2-bionic
+    container_name: mongo
+    image: mongo
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: url-shortener
     ports:
       - 27017:27017
+
 
   url-shortener-server:
     container_name: url-shortener-server
@@ -19,3 +22,18 @@ services:
       - mongo
     ports:
       - 8500:8500
+
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-expres
+    depends_on:
+      - mongo
+    ports:
+      - 8501:8501
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password
