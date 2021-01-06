@@ -7,35 +7,46 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
 	"time"
 )
 
 type Repository struct {
-	client   *mongo.Client
-	database string
+	client     *mongo.Client
+	database   string
+	timeout    time.Duration
+	credential options.Credential
 }
 
-func NewClient(url string) (*mongo.Client, error) {
-	client, err := mongo.NewClient(options.Client().ApplyURI(url))
+func NewClient(url string, credential options.Credential, timeout int) (*mongo.Client, error) {
+	// Initialize a new mongo client with options
+	client, err := mongo.NewClient(options.Client().ApplyURI(url).SetAuth(credential))
+
+	// Connect the mongo client to the MongoDB server
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+	err = client.Connect(ctx)
+
+	//To close the connection at the end
+	defer cancel()
+
+	// Ping MongoDB
+	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
+	err = client.Ping(context.Background(), readpref.Primary())
 	if err != nil {
-		log.Fatal(err)
+		return nil, errors.Wrap(err, "repository.NewClient")
+	} else {
+		log.Println("Connected!")
 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
 	return client, nil
 }
 
-func NewRepository(url, db string) (shortener.RedirectRepository, error) {
+func NewRepository(url, db string, credential options.Credential, timeout int) (shortener.RedirectRepository, error) {
 	repo := &Repository{
 		database: db,
 	}
-	client, err := NewClient(url)
+	client, err := NewClient(url, credential, timeout)
 	if err != nil {
 		return nil, errors.Wrap(err, "repository.NewRepository")
 	}
@@ -74,29 +85,20 @@ func (r Repository) FindByID(id uint) (*shortener.Redirect, error) {
 }
 
 func (r Repository) Save(redirect *shortener.Redirect) (*shortener.Redirect, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), r.timeout)
 	defer cancel()
-
-	// Generate ID
-	redirect.ID, _ = uuid.New()
-
-	// Save
 	collection := r.client.Database(r.database).Collection("redirects")
-	_, err := collection.InsertOne(ctx, bson.M{
-		"ID":         redirect.ID,
-		"code":       redirect.Code,
-		"url":        redirect.URL,
-		"click":      redirect.Click,
-		"created_at": redirect.CreatedAt,
-	})
+	_, err := collection.InsertOne(ctx,
+		bson.M{
+			"code":       redirect.Code,
+			"url":        redirect.URL,
+			"created_at": redirect.CreatedAt,
+			"click":      redirect.Click,
+		},
+	)
 	if err != nil {
 		errors.Wrap(err, "repository.Redirect.Save")
 	}
 
 	return redirect, err
-}
-
-func (r Repository) Update(redirect *shortener.Redirect) (*shortener.Redirect, error) {
-	// TODO: Implement this function
-	panic("implement me")
 }
