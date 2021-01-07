@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
+	"github.com/teris-io/shortid"
 	"net/http"
-	"time"
 )
 
 type RedirectHandler interface {
@@ -58,10 +58,15 @@ func (h handler) CreateRedirect() http.HandlerFunc {
 			RespondWithError(w, http.StatusBadRequest, err.Error())
 		}
 
+		shortURL := shortid.MustGenerate()
+		_, err = h.redirectService.FindByCode(shortURL)
+		if err == nil {
+			RespondWithError(w, http.StatusBadRequest, "Could not create a url!")
+			return
+		}
+
 		// Generate ID
-		redirect.Code = "88454"
-		redirect.CreatedAt = time.Now()
-		redirect.Click = 0
+		redirect.Code = shortURL
 
 		// 3. Save
 		createdRedirect, err := h.redirectService.Save(redirect)
