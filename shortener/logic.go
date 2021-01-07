@@ -25,8 +25,7 @@ func (r *redirectService) Save(redirect *Redirect) (*Redirect, error) {
 	if err := validate.Struct(redirect); err != nil {
 		return redirect, errors.Wrap(err, "service.Redirect.Save")
 	}
-	// TODO: Fix
-	redirect.Code = "A538"
+	redirect.Click = 0
 	redirect.CreatedAt = time.Now()
 	return r.redirectRepository.Save(redirect)
 }
