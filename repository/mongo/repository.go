@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"github.com/ahmetcancicek/go-url-shortener/config"
 	"github.com/ahmetcancicek/go-url-shortener/shortener"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -20,14 +21,14 @@ type Repository struct {
 	credential options.Credential
 }
 
-func NewRepository(dbURL, username, password, dbName string, timeout int) (shortener.RedirectRepository, error) {
+func NewRepository(db *config.DatabaseConfiguration) (shortener.RedirectRepository, error) {
 	repo := &Repository{
-		dbURL:   dbURL,
-		dbName:  dbName,
-		timeout: time.Duration(timeout),
+		dbURL:   db.URI,
+		dbName:  db.Name,
+		timeout: time.Duration(db.Timeout),
 		credential: options.Credential{
-			Username: username,
-			Password: password,
+			Username: db.Username,
+			Password: db.Password,
 		},
 	}
 
