@@ -26,8 +26,8 @@ func main() {
 	handler := shortener.NewHandler(service)
 
 	h := mux.NewRouter()
-	h.HandleFunc("/v1/redirect", handler.CreateRedirect()).Methods(http.MethodPost)
-	h.HandleFunc("/v1/redirect/{code}", handler.FindRedirectByCode()).Methods(http.MethodGet)
+	h.HandleFunc("/api/v1/redirect", handler.CreateRedirect()).Methods(http.MethodPost)
+	h.HandleFunc("/api/v1/redirect/{code}", handler.FindRedirectByCode()).Methods(http.MethodGet)
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Server.Port,
