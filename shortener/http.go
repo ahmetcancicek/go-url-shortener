@@ -34,6 +34,7 @@ func (h handler) FindRedirectByCode() http.HandlerFunc {
 			return
 		}
 
+		// TODO: Should be updated click number
 		RespondWithJSON(w, http.StatusOK, redirect)
 	}
 }
