@@ -36,28 +36,11 @@ type DatabaseConfiguration struct {
 
 func SetUp() (*Configuration, error) {
 
-	// Initialize
-	viper.AddConfigPath(configDirectory)
-	viper.SetConfigName(configFileName)
-	viper.SetConfigType(configType)
+	initialize()
 
-	// Bind
-	viper.BindEnv("server.port", "SERVER_PORT")
-	viper.BindEnv("database.uri", "DB_URI")
-	viper.BindEnv("database.name", "DB_NAME")
-	viper.BindEnv("database.username", "DB_USERNAME")
-	viper.BindEnv("database.password", "DB_PASSWORD")
-	viper.BindEnv("database.host", "DB_HOST")
-	viper.BindEnv("database.port", "DB_PORT")
+	bind()
 
-	// Set
-	viper.SetDefault("server.port", 8500)
-	viper.SetDefault("database.uri", "mongodb://localhost:27017")
-	viper.SetDefault("database.name", "url-shortener")
-	viper.SetDefault("database.username", "admin")
-	viper.SetDefault("database.password", "password")
-	viper.SetDefault("database.host", "localhost")
-	viper.SetDefault("database.port", 27017)
+	setDefault()
 
 	// Read or create
 	if err := readConfiguration(); err != nil {
@@ -73,6 +56,35 @@ func SetUp() (*Configuration, error) {
 	return configuration, nil
 }
 
+func initialize() {
+	// Initialize
+	viper.AddConfigPath(configDirectory)
+	viper.SetConfigName(configFileName)
+	viper.SetConfigType(configType)
+}
+
+func bind() {
+	// Bind
+	viper.BindEnv("server.port", "SERVER_PORT")
+	viper.BindEnv("database.uri", "DB_URI")
+	viper.BindEnv("database.name", "DB_NAME")
+	viper.BindEnv("database.username", "DB_USERNAME")
+	viper.BindEnv("database.password", "DB_PASSWORD")
+	viper.BindEnv("database.host", "DB_HOST")
+	viper.BindEnv("database.port", "DB_PORT")
+}
+
+func setDefault() {
+	// Set
+	viper.SetDefault("server.port", 8500)
+	viper.SetDefault("database.uri", "mongodb://localhost:27017")
+	viper.SetDefault("database.name", "url-shortener")
+	viper.SetDefault("database.username", "admin")
+	viper.SetDefault("database.password", "password")
+	viper.SetDefault("database.host", "localhost")
+	viper.SetDefault("database.port", 27017)
+}
+
 func readConfiguration() error {
 	if err := viper.ReadInConfig(); err != nil {
 		if _, err := os.Stat(configFilePath + configFileExt); os.IsNotExist(err) {
@@ -81,7 +93,6 @@ func readConfiguration() error {
 			return err
 		}
 	}
-
 	if err := viper.WriteConfig(); err != nil {
 		return err
 	}
