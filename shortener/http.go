@@ -11,6 +11,7 @@ import (
 type RedirectHandler interface {
 	FindRedirectByCode() http.HandlerFunc
 	CreateRedirect() http.HandlerFunc
+	CreateMultiRedirect() http.HandlerFunc
 }
 
 type handler struct {
@@ -74,4 +75,9 @@ func (h handler) CreateRedirect() http.HandlerFunc {
 
 		RespondWithJSON(w, http.StatusOK, createdRedirect)
 	}
+}
+
+func (h handler) CreateMultiRedirect() http.HandlerFunc {
+	// TODO: We can do this operation for multiple url
+	panic("implement me")
 }
