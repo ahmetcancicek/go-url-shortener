@@ -2,7 +2,6 @@ package mongo
 
 import (
 	"context"
-	"github.com/ahmetcancicek/go-url-shortener/config"
 	"github.com/ahmetcancicek/go-url-shortener/shortener"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,22 +13,21 @@ import (
 )
 
 type Repository struct {
-	client     *mongo.Client
-	dbURL      string
-	dbName     string
-	timeout    time.Duration
-	credential options.Credential
+	client   *mongo.Client
+	uri      string
+	name     string
+	username string
+	password string
+	timeout  time.Duration
 }
 
-func NewRepository(db *config.DatabaseConfiguration) (shortener.RedirectRepository, error) {
+func NewRepository(uri, name, username, password string, tiomeout int) (shortener.RedirectRepository, error) {
 	repo := &Repository{
-		dbURL:   db.URI,
-		dbName:  db.Name,
-		timeout: time.Duration(db.Timeout),
-		credential: options.Credential{
-			Username: db.Username,
-			Password: db.Password,
-		},
+		uri:      uri,
+		name:     name,
+		username: username,
+		password: password,
+		timeout:  time.Duration(tiomeout),
 	}
 
 	client, err := newClient(repo)
@@ -41,8 +39,14 @@ func NewRepository(db *config.DatabaseConfiguration) (shortener.RedirectReposito
 }
 
 func newClient(repo *Repository) (*mongo.Client, error) {
+
+	credential := options.Credential{
+		Username: repo.username,
+		Password: repo.password,
+	}
+
 	// Initialize a new mongo client with options
-	client, err := mongo.NewClient(options.Client().ApplyURI(repo.dbURL).SetAuth(repo.credential))
+	client, err := mongo.NewClient(options.Client().ApplyURI(repo.uri).SetAuth(credential))
 
 	// Connect the mongo client to the MongoDB server
 	ctx, cancel := context.WithTimeout(context.Background(), repo.timeout)
@@ -65,7 +69,7 @@ func newClient(repo *Repository) (*mongo.Client, error) {
 
 func (r Repository) FindByCode(code string) (*shortener.Redirect, error) {
 	redirect := &shortener.Redirect{}
-	collection := r.client.Database(r.dbName).Collection("redirects")
+	collection := r.client.Database(r.name).Collection("redirects")
 	filter := bson.M{"code": code}
 	err := collection.FindOne(context.TODO(), filter).Decode(&redirect)
 	if err != nil {
@@ -75,7 +79,7 @@ func (r Repository) FindByCode(code string) (*shortener.Redirect, error) {
 }
 
 func (r Repository) Save(redirect *shortener.Redirect) (*shortener.Redirect, error) {
-	collection := r.client.Database(r.dbName).Collection("redirects")
+	collection := r.client.Database(r.name).Collection("redirects")
 	_, err := collection.InsertOne(context.TODO(), redirect)
 	if err != nil {
 		errors.Wrap(err, "repository.Redirect.Save")

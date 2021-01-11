@@ -18,7 +18,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	repo, err := mongo.NewRepository(&cfg.Database)
+	repo, err := mongo.NewRepository(
+		cfg.Database.URI,
+		cfg.Database.Name,
+		cfg.Database.Username,
+		cfg.Database.Password,
+		cfg.Database.Timeout,
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
