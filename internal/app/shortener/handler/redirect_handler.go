@@ -1,7 +1,8 @@
-package shortener
+package handler
 
 import (
 	"encoding/json"
+	"github.com/ahmetcancicek/go-url-shortener/internal/app/shortener"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"github.com/teris-io/shortid"
@@ -15,10 +16,10 @@ type RedirectHandler interface {
 }
 
 type handler struct {
-	redirectService RedirectService
+	redirectService shortener.RedirectService
 }
 
-func NewHandler(service RedirectService) RedirectHandler {
+func NewHandler(service shortener.RedirectService) RedirectHandler {
 	return &handler{
 		redirectService: service,
 	}
@@ -31,24 +32,24 @@ func (h handler) FindRedirectByCode() http.HandlerFunc {
 
 		redirect, err := h.redirectService.FindByCode(string(code))
 		if err != nil {
-			RespondWithError(w, http.StatusNotFound, err.Error())
+			shortener.RespondWithError(w, http.StatusNotFound, err.Error())
 			return
 		}
 
 		// TODO: Should be updated click number
-		RespondWithJSON(w, http.StatusOK, redirect)
+		shortener.RespondWithJSON(w, http.StatusOK, redirect)
 	}
 }
 
 func (h handler) CreateRedirect() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		redirect := &Redirect{}
+		redirect := &shortener.Redirect{}
 
 		// 1. Decode request body
 		decoder := json.NewDecoder(r.Body)
 		if err := decoder.Decode(&redirect); err != nil {
-			RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
+			shortener.RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
 			return
 		}
 		defer r.Body.Close()
@@ -57,13 +58,13 @@ func (h handler) CreateRedirect() http.HandlerFunc {
 		validate := validator.New()
 		err := validate.Struct(redirect)
 		if err != nil {
-			RespondWithError(w, http.StatusBadRequest, err.Error())
+			shortener.RespondWithError(w, http.StatusBadRequest, err.Error())
 		}
 
 		shortURL := shortid.MustGenerate()
 		_, err = h.redirectService.FindByCode(shortURL)
 		if err == nil {
-			RespondWithError(w, http.StatusBadRequest, "Could not create a url!")
+			shortener.RespondWithError(w, http.StatusBadRequest, "Could not create a url!")
 			return
 		}
 
@@ -73,7 +74,7 @@ func (h handler) CreateRedirect() http.HandlerFunc {
 		// 3. Save
 		createdRedirect, err := h.redirectService.Save(redirect)
 
-		RespondWithJSON(w, http.StatusOK, createdRedirect)
+		shortener.RespondWithJSON(w, http.StatusOK, createdRedirect)
 	}
 }
 

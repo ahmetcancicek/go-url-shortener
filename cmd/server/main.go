@@ -2,8 +2,9 @@ package main
 
 import (
 	"github.com/ahmetcancicek/go-url-shortener/config"
-	"github.com/ahmetcancicek/go-url-shortener/internal/app/shortener"
+	handler2 "github.com/ahmetcancicek/go-url-shortener/internal/app/shortener/handler"
 	"github.com/ahmetcancicek/go-url-shortener/internal/app/shortener/repository/mongo"
+	service2 "github.com/ahmetcancicek/go-url-shortener/internal/app/shortener/service"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -28,8 +29,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	service := shortener.NewRedirectService(repo)
-	handler := shortener.NewHandler(service)
+	service := service2.NewRedirectService(repo)
+	handler := handler2.NewHandler(service)
 
 	h := mux.NewRouter()
 	h.HandleFunc("/api/v1/redirect", handler.CreateRedirect()).Methods(http.MethodPost)
