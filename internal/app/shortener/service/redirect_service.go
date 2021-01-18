@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/ahmetcancicek/go-url-shortener/internal/app/model"
 	"github.com/ahmetcancicek/go-url-shortener/internal/app/shortener"
 	"github.com/go-playground/validator/v10"
 	"github.com/pkg/errors"
@@ -17,11 +18,11 @@ func NewRedirectService(redirectRepository shortener.RedirectRepository) shorten
 	}
 }
 
-func (r redirectService) FindByCode(code string) (*shortener.Redirect, error) {
+func (r redirectService) FindByCode(code string) (*model.Redirect, error) {
 	return r.redirectRepository.FindByCode(code)
 }
 
-func (r *redirectService) Save(redirect *shortener.Redirect) (*shortener.Redirect, error) {
+func (r *redirectService) Save(redirect *model.Redirect) (*model.Redirect, error) {
 	validate := validator.New()
 	if err := validate.Struct(redirect); err != nil {
 		return redirect, errors.Wrap(err, "service.Redirect.Save")

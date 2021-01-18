@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"github.com/ahmetcancicek/go-url-shortener/internal/app/model"
 	"github.com/ahmetcancicek/go-url-shortener/internal/app/shortener"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -67,8 +68,8 @@ func newClient(repo *Repository) (*mongo.Client, error) {
 	return client, nil
 }
 
-func (r Repository) FindByCode(code string) (*shortener.Redirect, error) {
-	redirect := &shortener.Redirect{}
+func (r Repository) FindByCode(code string) (*model.Redirect, error) {
+	redirect := &model.Redirect{}
 	collection := r.client.Database(r.name).Collection("redirects")
 	filter := bson.M{"code": code}
 	err := collection.FindOne(context.TODO(), filter).Decode(&redirect)
@@ -78,7 +79,7 @@ func (r Repository) FindByCode(code string) (*shortener.Redirect, error) {
 	return redirect, nil
 }
 
-func (r Repository) Save(redirect *shortener.Redirect) (*shortener.Redirect, error) {
+func (r Repository) Save(redirect *model.Redirect) (*model.Redirect, error) {
 	collection := r.client.Database(r.name).Collection("redirects")
 	_, err := collection.InsertOne(context.TODO(), redirect)
 	if err != nil {

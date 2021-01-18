@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/ahmetcancicek/go-url-shortener/internal/app/model"
 	"github.com/ahmetcancicek/go-url-shortener/internal/app/shortener"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
@@ -32,24 +33,24 @@ func (h handler) FindRedirectByCode() http.HandlerFunc {
 
 		redirect, err := h.redirectService.FindByCode(string(code))
 		if err != nil {
-			shortener.RespondWithError(w, http.StatusNotFound, err.Error())
+			model.RespondWithError(w, http.StatusNotFound, err.Error())
 			return
 		}
 
 		// TODO: Should be updated click number
-		shortener.RespondWithJSON(w, http.StatusOK, redirect)
+		model.RespondWithJSON(w, http.StatusOK, redirect)
 	}
 }
 
 func (h handler) CreateRedirect() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		redirect := &shortener.Redirect{}
+		redirect := &model.Redirect{}
 
 		// 1. Decode request body
 		decoder := json.NewDecoder(r.Body)
 		if err := decoder.Decode(&redirect); err != nil {
-			shortener.RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
+			model.RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
 			return
 		}
 		defer r.Body.Close()
@@ -58,13 +59,13 @@ func (h handler) CreateRedirect() http.HandlerFunc {
 		validate := validator.New()
 		err := validate.Struct(redirect)
 		if err != nil {
-			shortener.RespondWithError(w, http.StatusBadRequest, err.Error())
+			model.RespondWithError(w, http.StatusBadRequest, err.Error())
 		}
 
 		shortURL := shortid.MustGenerate()
 		_, err = h.redirectService.FindByCode(shortURL)
 		if err == nil {
-			shortener.RespondWithError(w, http.StatusBadRequest, "Could not create a url!")
+			model.RespondWithError(w, http.StatusBadRequest, "Could not create a url!")
 			return
 		}
 
@@ -74,7 +75,7 @@ func (h handler) CreateRedirect() http.HandlerFunc {
 		// 3. Save
 		createdRedirect, err := h.redirectService.Save(redirect)
 
-		shortener.RespondWithJSON(w, http.StatusOK, createdRedirect)
+		model.RespondWithJSON(w, http.StatusOK, createdRedirect)
 	}
 }
 

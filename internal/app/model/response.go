@@ -1,4 +1,4 @@
-package shortener
+package model
 
 import (
 	"encoding/json"
