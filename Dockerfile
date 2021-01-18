@@ -3,7 +3,7 @@ WORKDIR /app
 COPY go.mod .
 RUN go mod download
 COPY ./cmd ./cmd
-COPY ./repository ./repository
+COPY internal/app/shortener/repository ./repository
 COPY ./config ./config
 COPY internal/app/shortener ./shortener
 RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server

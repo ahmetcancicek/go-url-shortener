@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/ahmetcancicek/go-url-shortener/config"
 	"github.com/ahmetcancicek/go-url-shortener/internal/app/shortener"
-	"github.com/ahmetcancicek/go-url-shortener/repository/mongo"
+	"github.com/ahmetcancicek/go-url-shortener/internal/app/shortener/repository/mongo"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
