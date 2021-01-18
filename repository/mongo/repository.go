@@ -2,7 +2,7 @@ package mongo
 
 import (
 	"context"
-	"github.com/ahmetcancicek/go-url-shortener/shortener"
+	"github.com/ahmetcancicek/go-url-shortener/internal/app/shortener"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
