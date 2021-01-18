@@ -1,8 +1,11 @@
 package shortener
 
-import "github.com/ahmetcancicek/go-url-shortener/internal/app/model"
+import (
+	"context"
+	"github.com/ahmetcancicek/go-url-shortener/internal/app/model"
+)
 
 type RedirectService interface {
-	FindByCode(code string) (*model.Redirect, error)
-	Save(redirect *model.Redirect) (*model.Redirect, error)
+	FindByCode(ctx context.Context, code string) (*model.Redirect, error)
+	Save(ctx context.Context, redirect *model.Redirect) (*model.Redirect, error)
 }
