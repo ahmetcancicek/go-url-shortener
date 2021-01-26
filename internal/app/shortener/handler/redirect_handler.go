@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/ahmetcancicek/go-url-shortener/internal/app/model"
 	"github.com/ahmetcancicek/go-url-shortener/internal/app/shortener"
@@ -18,10 +19,12 @@ type RedirectHandler interface {
 
 type handler struct {
 	redirectService shortener.RedirectService
+	ctx             context.Context
 }
 
-func NewHandler(service shortener.RedirectService) RedirectHandler {
+func NewHandler(ctx context.Context, service shortener.RedirectService) RedirectHandler {
 	return &handler{
+		ctx:             ctx,
 		redirectService: service,
 	}
 }
@@ -31,7 +34,10 @@ func (h handler) FindRedirectByCode() http.HandlerFunc {
 		vars := mux.Vars(r)
 		code := vars["code"]
 
-		redirect, err := h.redirectService.FindByCode(string(code))
+		ctx := h.ctx
+		ctx = context.Background()
+
+		redirect, err := h.redirectService.FindByCode(ctx, string(code))
 		if err != nil {
 			model.RespondWithError(w, http.StatusNotFound, err.Error())
 			return
@@ -62,8 +68,11 @@ func (h handler) CreateRedirect() http.HandlerFunc {
 			model.RespondWithError(w, http.StatusBadRequest, err.Error())
 		}
 
+		ctx := h.ctx
+		ctx = context.Background()
+
 		shortURL := shortid.MustGenerate()
-		_, err = h.redirectService.FindByCode(shortURL)
+		_, err = h.redirectService.FindByCode(ctx, shortURL)
 		if err == nil {
 			model.RespondWithError(w, http.StatusBadRequest, "Could not create a url!")
 			return
@@ -73,7 +82,7 @@ func (h handler) CreateRedirect() http.HandlerFunc {
 		redirect.Code = shortURL
 
 		// 3. Save
-		createdRedirect, err := h.redirectService.Save(redirect)
+		createdRedirect, err := h.redirectService.Save(ctx, redirect)
 
 		model.RespondWithJSON(w, http.StatusOK, createdRedirect)
 	}

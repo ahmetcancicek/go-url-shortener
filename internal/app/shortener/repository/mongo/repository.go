@@ -10,7 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
-	"time"
 )
 
 type Repository struct {
@@ -19,16 +18,16 @@ type Repository struct {
 	name     string
 	username string
 	password string
-	timeout  time.Duration
+	ctx      context.Context
 }
 
-func NewRepository(uri, name, username, password string, tiomeout int) (shortener.RedirectRepository, error) {
+func NewRepository(uri, name, username, password string, ctx context.Context) (shortener.RedirectRepository, error) {
 	repo := &Repository{
 		uri:      uri,
 		name:     name,
 		username: username,
 		password: password,
-		timeout:  time.Duration(tiomeout),
+		ctx:      ctx,
 	}
 
 	client, err := newClient(repo)
@@ -49,16 +48,11 @@ func newClient(repo *Repository) (*mongo.Client, error) {
 	// Initialize a new mongo client with options
 	client, err := mongo.NewClient(options.Client().ApplyURI(repo.uri).SetAuth(credential))
 
-	// Connect the mongo client to the MongoDB server
-	ctx, cancel := context.WithTimeout(context.Background(), repo.timeout)
-	err = client.Connect(ctx)
-
-	//To close the connection at the end
-	defer cancel()
+	err = client.Connect(repo.ctx)
 
 	// Ping MongoDB
-	ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
-	err = client.Ping(context.Background(), readpref.Primary())
+	//ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
+	err = client.Ping(repo.ctx, readpref.Primary())
 	if err != nil {
 		return nil, errors.Wrap(err, "repository.newClient")
 	} else {
@@ -68,20 +62,20 @@ func newClient(repo *Repository) (*mongo.Client, error) {
 	return client, nil
 }
 
-func (r Repository) FindByCode(code string) (*model.Redirect, error) {
+func (r Repository) FindByCode(ctx context.Context, code string) (*model.Redirect, error) {
 	redirect := &model.Redirect{}
 	collection := r.client.Database(r.name).Collection("redirects")
 	filter := bson.M{"code": code}
-	err := collection.FindOne(context.TODO(), filter).Decode(&redirect)
+	err := collection.FindOne(ctx, filter).Decode(&redirect)
 	if err != nil {
 		return nil, errors.Wrap(err, "repository.Redirect.FindByCode")
 	}
 	return redirect, nil
 }
 
-func (r Repository) Save(redirect *model.Redirect) (*model.Redirect, error) {
+func (r Repository) Save(ctx context.Context, redirect *model.Redirect) (*model.Redirect, error) {
 	collection := r.client.Database(r.name).Collection("redirects")
-	_, err := collection.InsertOne(context.TODO(), redirect)
+	_, err := collection.InsertOne(ctx, redirect)
 	if err != nil {
 		errors.Wrap(err, "repository.Redirect.Save")
 	}
