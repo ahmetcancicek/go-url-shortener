@@ -19,12 +19,10 @@ type RedirectHandler interface {
 
 type handler struct {
 	redirectService shortener.RedirectService
-	ctx             context.Context
 }
 
-func NewHandler(ctx context.Context, service shortener.RedirectService) RedirectHandler {
+func NewHandler(service shortener.RedirectService) RedirectHandler {
 	return &handler{
-		ctx:             ctx,
 		redirectService: service,
 	}
 }
@@ -34,8 +32,7 @@ func (h handler) FindRedirectByCode() http.HandlerFunc {
 		vars := mux.Vars(r)
 		code := vars["code"]
 
-		ctx := h.ctx
-		ctx = context.Background()
+		ctx := context.Background()
 
 		redirect, err := h.redirectService.FindByCode(ctx, string(code))
 		if err != nil {
@@ -68,8 +65,7 @@ func (h handler) CreateRedirect() http.HandlerFunc {
 			model.RespondWithError(w, http.StatusBadRequest, err.Error())
 		}
 
-		ctx := h.ctx
-		ctx = context.Background()
+		ctx := context.Background()
 
 		shortURL := shortid.MustGenerate()
 		_, err = h.redirectService.FindByCode(ctx, shortURL)

@@ -10,49 +10,55 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
+	"time"
 )
 
-type Repository struct {
+type repository struct {
 	client   *mongo.Client
 	uri      string
 	name     string
 	username string
 	password string
-	ctx      context.Context
 }
 
-func NewRepository(uri, name, username, password string, ctx context.Context) (shortener.RedirectRepository, error) {
-	repo := &Repository{
+func NewRepository(uri, name, username, password string) (shortener.RedirectRepository, *mongo.Client, error) {
+
+	repo := repository{
 		uri:      uri,
 		name:     name,
 		username: username,
 		password: password,
-		ctx:      ctx,
 	}
 
-	client, err := newClient(repo)
+	client, err := newClient(uri, username, password)
 	if err != nil {
-		return nil, errors.Wrap(err, "repository.NewRepository")
+		return nil, client, errors.Wrap(err, "repository.NewRepository")
 	}
 	repo.client = client
-	return repo, nil
+
+	return repo, client, nil
 }
 
-func newClient(repo *Repository) (*mongo.Client, error) {
+func newClient(uri, username, password string) (*mongo.Client, error) {
 
+	// Credential
 	credential := options.Credential{
-		Username: repo.username,
-		Password: repo.password,
+		Username: username,
+		Password: password,
 	}
 
-	// Initialize a new mongo client with options
-	client, err := mongo.NewClient(options.Client().ApplyURI(repo.uri).SetAuth(credential))
+	// Context
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(10*time.Second))
+	defer cancel()
 
-	err = client.Connect(repo.ctx)
+	// Initialize a new mongo client with options
+	client, err := mongo.NewClient(options.Client().ApplyURI(uri).SetAuth(credential))
+
+	// Connect
+	err = client.Connect(ctx)
 
 	// Ping MongoDB
-	//ctx, _ = context.WithTimeout(context.Background(), 10*time.Second)
-	err = client.Ping(repo.ctx, readpref.Primary())
+	err = client.Ping(ctx, readpref.Primary())
 	if err != nil {
 		return nil, errors.Wrap(err, "repository.newClient")
 	} else {
@@ -62,7 +68,7 @@ func newClient(repo *Repository) (*mongo.Client, error) {
 	return client, nil
 }
 
-func (r Repository) FindByCode(ctx context.Context, code string) (*model.Redirect, error) {
+func (r repository) FindByCode(ctx context.Context, code string) (*model.Redirect, error) {
 	redirect := &model.Redirect{}
 	collection := r.client.Database(r.name).Collection("redirects")
 	filter := bson.M{"code": code}
@@ -73,7 +79,7 @@ func (r Repository) FindByCode(ctx context.Context, code string) (*model.Redirec
 	return redirect, nil
 }
 
-func (r Repository) Save(ctx context.Context, redirect *model.Redirect) (*model.Redirect, error) {
+func (r repository) Save(ctx context.Context, redirect *model.Redirect) (*model.Redirect, error) {
 	collection := r.client.Database(r.name).Collection("redirects")
 	_, err := collection.InsertOne(ctx, redirect)
 	if err != nil {

@@ -13,18 +13,18 @@ import (
 
 func main() {
 
-	// Context
-	ctx, _ := context.WithTimeout(context.Background(), time.Duration(2*time.Second))
-
 	// DB Connect
-	repo, err := mongo.NewRepository("mongodb://localhost:27017", "url-shortener", "admin", "password", ctx)
+	repo, client, err := mongo.NewRepository("mongodb://localhost:27017", "url-shortener", "admin", "password")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Repository and logic layer
 	logic := service.NewRedirectService(repo)
-	api := handler.NewHandler(ctx, logic)
+	api := handler.NewHandler(logic)
+
+	//
+	defer client.Disconnect(context.Background())
 
 	// Router
 	h := mux.NewRouter()
