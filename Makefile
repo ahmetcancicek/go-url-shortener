@@ -9,3 +9,7 @@ stop:
 
 mongo:
 	docker-compose up -d mongo
+
+run:
+	docker-compose up -d mongo
+	go run cmd/server/main.go
