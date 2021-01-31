@@ -3,8 +3,8 @@
 URL Shortener service written with Go and MongoDB. It provides the following functionalities.
 * Short URL
 * Respond to original URL when request short URL
-* Access numbers of clicks on a short URL [To-DO]
-* Multiple Short URL [TO-DO]
+* Access numbers of clicks on a short URL [TODO]
+* Multiple Short URL [TODO]
 
 ## Run
 
@@ -16,8 +16,9 @@ Run
 ` GET localhost:8500/api/v1/redirect/{code}`
 
 ### Request
-```json
 
+```
+curl -X GET localhost:8500/api/v1/redirect/{code}
 ```
 
 ### Response
@@ -36,7 +37,7 @@ Run
 
 ### Request
 
-```json 
+```
 curl -X POST localhost:8500/api/v1/redirect 'Content-Type: application/json' -d '{"URL":"http://www.github.com"}'
 ```
 
